@@ -1,0 +1,131 @@
+/* ── Desktop Table ── */
+.historial-table__desktop {
+    display: block;
+}
+
+.historial-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.historial-table thead th {
+    text-align: left;
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.historial-table tbody tr {
+    transition: background var(--transition-fast);
+}
+
+.historial-table tbody tr:hover {
+    background: var(--color-bg-surface-hover);
+}
+
+.historial-table tbody td {
+    padding: var(--space-4);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    border-bottom: 1px solid var(--color-border);
+}
+
+/* ── Status Badges ── */
+.historial-badge {
+    display: inline-block;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+}
+
+.badge--active {
+    background: var(--color-success-soft);
+    color: var(--color-success);
+}
+
+.badge--paused {
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
+}
+
+.badge--finished {
+    background: var(--color-bg-elevated);
+    color: var(--color-text-secondary);
+}
+
+/* ── Mobile Cards ── */
+.historial-table__mobile {
+    display: none;
+}
+
+.historial-card {
+    padding: var(--space-4);
+}
+
+.historial-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-3);
+}
+
+.historial-card__date {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+}
+
+.historial-card__details {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+}
+
+.historial-card__detail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.historial-card__label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ── Empty State ── */
+.historial-table__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4);
+    padding: var(--space-16);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .historial-table__desktop {
+        display: none;
+    }
+
+    .historial-table__mobile {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+
+    .historial-card__details {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+}

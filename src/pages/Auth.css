@@ -1,0 +1,71 @@
+/* ============================================
+   Auth Pages — Login & Signup shared styles
+   ============================================ */
+
+.auth-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--color-bg-primary);
+    padding: var(--space-4);
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-10);
+    animation: fadeInScale 0.5s ease both;
+}
+
+.auth-card__header {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.auth-card__logo {
+    margin: 0 auto var(--space-4);
+}
+
+.auth-card__title {
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--space-2);
+}
+
+.auth-card__subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+.auth-card__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.auth-card__submit {
+    width: 100%;
+    margin-top: var(--space-2);
+}
+
+.auth-card__footer {
+    text-align: center;
+    margin-top: var(--space-6);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+.auth-card__footer a {
+    color: var(--color-accent-primary);
+    font-weight: var(--font-weight-medium);
+}
+
+@media (max-width: 480px) {
+    .auth-card {
+        padding: var(--space-6);
+        border-radius: var(--radius-lg);
+    }
+}

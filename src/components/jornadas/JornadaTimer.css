@@ -1,0 +1,44 @@
+.jornada-timer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4);
+    padding: var(--space-8) var(--space-12);
+    position: relative;
+}
+
+.jornada-timer__display {
+    font-size: 5rem;
+    font-weight: var(--font-weight-bold);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-primary);
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 40px rgba(139, 92, 246, 0.1);
+}
+
+.jornada-timer--running .jornada-timer__display {
+    text-shadow: 0 0 40px rgba(16, 185, 129, 0.2);
+}
+
+.jornada-timer__pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+    animation: pulse 2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@media (max-width: 480px) {
+    .jornada-timer__display {
+        font-size: 3rem;
+    }
+
+    .jornada-timer {
+        padding: var(--space-6);
+    }
+}

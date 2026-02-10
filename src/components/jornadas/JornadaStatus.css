@@ -1,0 +1,56 @@
+.jornada-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-full);
+    width: fit-content;
+}
+
+.jornada-status__dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* ── States ── */
+.jornada-status--none {
+    color: var(--color-text-muted);
+    background: var(--color-bg-surface);
+}
+
+.jornada-status--none .jornada-status__dot {
+    background: var(--color-text-muted);
+}
+
+.jornada-status--active {
+    color: var(--color-success);
+    background: var(--color-success-soft);
+}
+
+.jornada-status--active .jornada-status__dot {
+    background: var(--color-success);
+    animation: pulse 1.5s infinite;
+}
+
+.jornada-status--paused {
+    color: var(--color-warning);
+    background: var(--color-warning-soft);
+}
+
+.jornada-status--paused .jornada-status__dot {
+    background: var(--color-warning);
+    animation: pulse 2s infinite;
+}
+
+.jornada-status--finished {
+    color: var(--color-text-secondary);
+    background: var(--color-bg-surface);
+}
+
+.jornada-status--finished .jornada-status__dot {
+    background: var(--color-text-muted);
+}

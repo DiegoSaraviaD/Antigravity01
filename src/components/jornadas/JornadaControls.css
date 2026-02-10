@@ -1,0 +1,30 @@
+.jornada-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+}
+
+.jornada-controls__btn {
+    min-width: 160px;
+    padding: var(--space-4) var(--space-8);
+    font-size: var(--font-size-base);
+}
+
+.jornada-controls__btn--start {
+    min-width: 220px;
+    padding: var(--space-5) var(--space-10);
+    font-size: var(--font-size-lg);
+}
+
+@media (max-width: 480px) {
+    .jornada-controls {
+        flex-direction: column;
+    }
+
+    .jornada-controls__btn,
+    .jornada-controls__btn--start {
+        width: 100%;
+    }
+}
