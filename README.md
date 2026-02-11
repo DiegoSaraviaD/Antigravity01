@@ -6,10 +6,11 @@ Una aplicación web moderna y profesional diseñada para la gestión y control d
 
 -   **Gestión de Autenticación**: Registro e inicio de sesión seguro mediante **Supabase Auth**.
 -   **Control de Jornadas**: Registro preciso de inicio, pausa y fin de jornada con cálculo automático de horas.
--   **Dashboard Financiero**: Visualización de ingresos, costos, utilidad neta y métricas de clientes.
--   **Historial Detallado**: Listado completo de jornadas anteriores con filtros y ordenamiento.
+-   **Dashboard de Productividad**: Visualización de horas totales, promedio diario, días trabajados y récords de jornada.
+-   **Historial Detallado**: Listado completo de jornadas anteriores con estados y duraciones.
+-   **Sincronización Automática**: Integración profunda con Supabase mediante Triggers para recálculo de métricas en tiempo real.
 -   **Diseño Responsive**: Interfaz optimizada para dispositivos móviles, tablets y desktop.
--   **Iconografía Profesional**: Uso de la librería `lucide-react` para una estética premium.
+-   **Iconografía Profesional**: Uso de la librería `lucide-react` para una estética premium y consistente.
 
 ## 🛠️ Tech Stack
 
@@ -41,12 +42,11 @@ graph TD
 ```mermaid
 erDiagram
     USERS ||--o{ JORNADAS : "realiza"
-    USERS ||--o{ METRICAS_FINANCIERAS : "genera"
+    USERS ||--o{ ESTADISTICAS_PRODUCTIVIDAD : "actualiza (vía Trigger)"
 
     USERS {
         uuid id PK
         string email
-        timestamp created_at
     }
 
     JORNADAS {
@@ -60,15 +60,13 @@ erDiagram
         string estado "activa | pausada | finalizada"
     }
 
-    METRICAS_FINANCIERAS {
+    ESTADISTICAS_PRODUCTIVIDAD {
         uuid id PK
         uuid user_id FK
-        decimal ingresos_totales
-        decimal costos_totales
-        int clientes_nuevos
-        int clientes_recurrentes
-        decimal utilidad_neta
-        decimal porcentaje_utilidad
+        decimal total_horas_mes
+        decimal promedio_diario
+        int dias_trabajados
+        decimal jornada_max
         date periodo
     }
 ```

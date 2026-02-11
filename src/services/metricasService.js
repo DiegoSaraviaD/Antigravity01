@@ -1,126 +1,109 @@
 /**
- * Métricas Financieras Service — read-only queries for dashboard metrics.
- * Column mapping matches the `metricas_financieras` table:
- *   periodo, ingresos, egresos, clientes_nuevos, clientes_recurrentes
+ * Métricas de Productividad Service — Read-only queries for work shifts.
+ * Focuses on time, attendance, and efficiency.
  */
 import { supabase } from './supabase.js';
 
 /**
- * Get total income for a user (sum of all periods).
+ * Get core time stats for a user from the productivity table.
  * @param {string} userId
- * @returns {Promise<{data: number, error}>}
+ * @returns {Promise<{data: {totalHorasMes, promedioDiario, diasTrabajados, jornadaMax}, error}>}
  */
-export async function getIngresos(userId) {
-    const { data, error } = await supabase
-        .from('metricas_financieras')
-        .select('ingresos')
-        .eq('user_id', userId);
+export async function getStatsTiempo(userId) {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
 
-    if (error) return { data: 0, error: error.message };
-    const total = (data || []).reduce((sum, row) => sum + Number(row.ingresos || 0), 0);
-    return { data: total, error: null };
+    const { data, error } = await supabase
+        .from('estadisticas_productividad')
+        .select('total_horas_mes, promedio_diario, dias_trabajados, jornada_max')
+        .eq('user_id', userId)
+        .eq('periodo', startOfMonth)
+        .single();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 is code for "no rows found"
+        return { data: null, error: error.message };
+    }
+
+    if (!data) {
+        return {
+            data: {
+                totalHorasMes: 0,
+                promedioDiario: 0,
+                diasTrabajados: 0,
+                jornadaMax: 0
+            },
+            error: null
+        };
+    }
+
+    return {
+        data: {
+            totalHorasMes: Number(data.total_horas_mes || 0),
+            promedioDiario: Number(data.promedio_diario || 0),
+            diasTrabajados: Number(data.dias_trabajados || 0),
+            jornadaMax: Number(data.jornada_max || 0)
+        },
+        error: null
+    };
 }
 
 /**
- * Get total costs for a user.
- * @param {string} userId
- * @returns {Promise<{data: number, error}>}
- */
-export async function getCostos(userId) {
-    const { data, error } = await supabase
-        .from('metricas_financieras')
-        .select('egresos')
-        .eq('user_id', userId);
-
-    if (error) return { data: 0, error: error.message };
-    const total = (data || []).reduce((sum, row) => sum + Number(row.egresos || 0), 0);
-    return { data: total, error: null };
-}
-
-/**
- * Get client counts (new + recurring).
- * @param {string} userId
- * @returns {Promise<{data: {nuevos, recurrentes}, error}>}
- */
-export async function getClientes(userId) {
-    const { data, error } = await supabase
-        .from('metricas_financieras')
-        .select('clientes_nuevos, clientes_recurrentes')
-        .eq('user_id', userId);
-
-    if (error) return { data: { nuevos: 0, recurrentes: 0 }, error: error.message };
-    const nuevos = (data || []).reduce((s, r) => s + Number(r.clientes_nuevos || 0), 0);
-    const recurrentes = (data || []).reduce((s, r) => s + Number(r.clientes_recurrentes || 0), 0);
-    return { data: { nuevos, recurrentes }, error: null };
-}
-
-/**
- * Get net profit (ingresos – egresos) and profit percentage.
- * Computed client-side from ingresos & egresos columns.
- * @param {string} userId
- * @returns {Promise<{data: {utilidad, porcentaje}, error}>}
- */
-export async function getUtilidad(userId) {
-    const { data, error } = await supabase
-        .from('metricas_financieras')
-        .select('ingresos, egresos')
-        .eq('user_id', userId);
-
-    if (error) return { data: { utilidad: 0, porcentaje: 0 }, error: error.message };
-
-    const totalIngresos = (data || []).reduce((s, r) => s + Number(r.ingresos || 0), 0);
-    const totalEgresos = (data || []).reduce((s, r) => s + Number(r.egresos || 0), 0);
-    const utilidad = totalIngresos - totalEgresos;
-    const porcentaje = totalIngresos > 0 ? (utilidad / totalIngresos) * 100 : 0;
-
-    return { data: { utilidad, porcentaje }, error: null };
-}
-
-/**
- * Get flow data for chart (ingresos & egresos per period, last 7 days).
+ * Get productivity chart data (worked hours per day, last 15 days).
  * @param {string} userId
  * @returns {Promise<{data: Array, error}>}
  */
-export async function getFlujo(userId) {
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const fromDate = sevenDaysAgo.toISOString().split('T')[0];
+export async function getGraficoProductividad(userId) {
+    const fifteenDaysAgo = new Date();
+    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
+    const fromDate = fifteenDaysAgo.toISOString().split('T')[0];
 
     const { data, error } = await supabase
-        .from('metricas_financieras')
-        .select('periodo, ingresos, egresos')
+        .from('jornadas')
+        .select('fecha, horas_trabajadas')
         .eq('user_id', userId)
-        .gte('periodo', fromDate)
-        .order('periodo', { ascending: true });
+        .eq('estado', 'finalizada')
+        .gte('fecha', fromDate)
+        .order('fecha', { ascending: true });
 
     if (error) return { data: [], error: error.message };
 
-    const chartData = (data || []).map((row) => ({
-        periodo: row.periodo,
-        ingresos: Number(row.ingresos || 0),
-        egresos: Number(row.egresos || 0),
+    // Group by date in case there are multiple shifts in one day
+    const grouped = (data || []).reduce((acc, row) => {
+        acc[row.fecha] = (acc[row.fecha] || 0) + Number(row.horas_trabajadas || 0);
+        return acc;
+    }, {});
+
+    const chartData = Object.keys(grouped).map(date => ({
+        fecha: date,
+        horas: Number(grouped[date].toFixed(2))
     }));
 
     return { data: chartData, error: null };
 }
 
 /**
- * Get total worked hours for a user in the current month.
+ * Calculate weekly progress vs a target (e.g. 40h).
  * @param {string} userId
- * @returns {Promise<{data: number, error}>}
+ * @returns {Promise<{data: {current, target, percentage}, error}>}
  */
-export async function getHorasMes(userId) {
+export async function getProgresoSemanal(userId) {
     const now = new Date();
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const day = now.getDay(); // 0 is Sun, 1 is Mon...
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Adjust to Monday
+    const monday = new Date(now.setDate(diff)).toISOString().split('T')[0];
 
     const { data, error } = await supabase
         .from('jornadas')
         .select('horas_trabajadas')
         .eq('user_id', userId)
         .eq('estado', 'finalizada')
-        .gte('fecha', firstDay.split('T')[0]);
+        .gte('fecha', monday);
 
-    if (error) return { data: 0, error: error.message };
-    const total = (data || []).reduce((sum, row) => sum + Number(row.horas_trabajadas || 0), 0);
-    return { data: total, error: null };
+    if (error) return { data: { current: 0, target: 40, percentage: 0 }, error: error.message };
+
+    const current = (data || []).reduce((sum, r) => sum + Number(r.horas_trabajadas || 0), 0);
+    const target = 40; // Hardcoded or fetch from user settings in the future
+    const percentage = Math.min((current / target) * 100, 100);
+
+    return { data: { current, target, percentage }, error: null };
 }

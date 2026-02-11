@@ -75,7 +75,7 @@ El sistema proporciona las siguientes funciones principales:
 
 **Historial de Jornadas:** Consulta de registros históricos de jornadas del usuario, visualización de fechas, horarios y duración de cada jornada, y ordenamiento cronológico de registros.
 
-**Dashboard de Métricas Financieras:** Visualización de ingresos totales en soles, cálculo y visualización de costos totales del inventario, identificación y conteo de clientes nuevos versus recurrentes, cálculo de utilidad neta en valor absoluto y porcentaje, y gráfico de flujo de ingresos y egresos.
+**Dashboard de Productividad:** Visualización de horas totales trabajadas, cálculo de promedio diario real, registro de récords personales (jornada máxima), seguimiento de asistencia mensual y carga semanal, con gráficos dinámicos de horas por día.
 
 ### 2.3 Características de los Usuarios
 
@@ -187,65 +187,51 @@ El sistema proporciona las siguientes funciones principales:
 
 **Criterios de Aceptación:** Solo se muestran jornadas del usuario autenticado. Los registros se ordenan del más reciente al más antiguo. Las fechas y horas se muestran en formato legible. La duración se calcula y muestra correctamente. Los datos provienen de Supabase.
 
-#### RF-008: Dashboard de Ingresos Totales
+#### RF-008: Dashboard de Horas Totales (Mes)
 **Prioridad:** Media  
-**Descripción:** El sistema debe calcular y visualizar los ingresos totales en soles del período.  
+**Descripción:** El sistema debe calcular y visualizar el total de horas trabajadas en el mes actual.  
 
-**Entradas:** Datos de producción registrados en tabla metricas_financieras.  
+**Entradas:** Registros de la tabla estadisticas_productividad para el mes en curso.  
 
-**Proceso:** Consultar tabla metricas_financieras, sumar todos los ingresos del usuario, formatear valor en soles peruanos, mostrar en card del dashboard.  
+**Proceso:** Consultar tabla estadisticas_productividad, obtener valor de total_horas_mes para el usuario actual, mostrar en card del dashboard.  
 
-**Salidas:** Valor total de ingresos en formato S/ XX,XXX.XX.  
+**Salidas:** Valor total de horas (ej. 165.5h).  
 
-**Criterios de Aceptación:** El cálculo debe ser preciso. El formato debe incluir símbolo de moneda y decimales. El valor debe actualizarse al cargar el dashboard. Los datos provienen de Supabase.
+**Criterios de Aceptación:** El valor debe actualizarse automáticamente al finalizar una jornada. Los datos provienen de Supabase.
 
-#### RF-009: Dashboard de Costos Totales
+#### RF-009: Dashboard de Promedio Diario
 **Prioridad:** Media  
-**Descripción:** El sistema debe calcular y visualizar los costos totales del inventario.  
+**Descripción:** El sistema debe visualizar el promedio de horas trabajadas por cada día laboral.  
 
-**Entradas:** Datos de inventario registrados en tabla metricas_financieras.  
+**Entradas:** Datos de estadisticas_productividad.  
 
-**Proceso:** Consultar tabla metricas_financieras, sumar todos los costos del usuario, formatear valor en soles, mostrar en card del dashboard.  
+**Proceso:** Consultar promedio_diario en la tabla de estadísticas, mostrar en el dashboard.  
 
-**Salidas:** Valor total de costos en formato S/ XX,XXX.XX.  
+**Salidas:** Promedio de horas (ej. 8.2h).
 
-**Criterios de Aceptación:** El cálculo debe incluir todos los costos del inventario. El formato debe ser consistente con ingresos. El valor debe provenir de Supabase.
-
-#### RF-010: Dashboard de Clientes
+#### RF-010: Dashboard de Asistencia (Días Trabajados)
 **Prioridad:** Media  
-**Descripción:** El sistema debe identificar y mostrar la cantidad de clientes nuevos versus recurrentes.  
+**Descripción:** El sistema debe contar los días únicos en los que el usuario ha completado una jornada.  
 
-**Entradas:** Datos de clientes en tabla metricas_financieras.  
+**Entradas:** Columna dias_trabajados de la tabla de estadísticas.  
 
-**Proceso:** Consultar tabla de clientes o metricas_financieras, identificar clientes por fecha de primer registro, clasificar como nuevos (primera compra en período) o recurrentes (compras anteriores), contar cada categoría, mostrar en card del dashboard.  
+**Proceso:** Consultar y mostrar el conteo de días con jornadas finalizadas en el mes.
 
-**Salidas:** Cantidad de clientes nuevos y cantidad de clientes recurrentes.  
-
-**Criterios de Aceptación:** La clasificación debe ser precisa basada en fechas. Los números deben actualizarse dinámicamente. Los datos provienen de Supabase.
-
-#### RF-011: Dashboard de Utilidad Neta
+#### RF-011: Dashboard de Jornada Máxima
 **Prioridad:** Media  
-**Descripción:** El sistema debe calcular y mostrar la utilidad neta en soles y porcentaje.  
+**Descripción:** El sistema debe identificar la jornada más larga registrada por el usuario.  
 
-**Entradas:** Ingresos totales y costos totales previamente calculados.  
+**Entradas:** Columna jornada_max de estadisticas_productividad.  
 
-**Proceso:** Calcular utilidad neta (Ingresos - Costos), calcular porcentaje de utilidad ((Utilidad / Ingresos) * 100), formatear valores, mostrar ambos en card del dashboard.  
-
-**Salidas:** Utilidad neta en S/ XX,XXX.XX y porcentaje XX.XX%.  
-
-**Criterios de Aceptación:** Los cálculos deben ser matemáticamente correctos. Se deben mostrar ambos formatos (valor y porcentaje). Los valores deben reflejar datos actuales de Supabase.
-
-#### RF-012: Gráfico de Flujo de Ingresos y Egresos
+#### RF-012: Gráfico de Productividad Temporal
 **Prioridad:** Media  
-**Descripción:** El sistema debe visualizar gráficamente el flujo de ingresos y egresos.  
+**Descripción:** El sistema debe visualizar gráficamente las horas trabajadas por día en los últimos 15 días.  
 
-**Entradas:** Datos históricos de ingresos y egresos.  
+**Entradas:** Historial de jornadas finalizadas.  
 
-**Proceso:** Consultar datos agrupados por período (día/semana/mes), preparar datos para visualización gráfica, renderizar gráfico de líneas o barras, mostrar en dashboard.  
+**Proceso:** Agrupar horas por fecha, generar serie de datos para gráfico de barras, resaltar días con más de 8 horas, renderizar en el dashboard.  
 
-**Salidas:** Gráfico visual mostrando tendencia de ingresos vs egresos.  
-
-**Criterios de Aceptación:** El gráfico debe ser legible y claro. Los datos deben corresponder a Supabase. El gráfico debe ser responsive.
+**Salidas:** Gráfico de barras interactivo.
 
 #### RF-013: Protección de Rutas
 **Prioridad:** Alta  
@@ -536,39 +522,15 @@ Lógica: Si usuario autenticado, renderiza children. Si no, redirige a /login.
 
 **MetricCard (Genérica):**
 Responsabilidad: Componente base reutilizable para mostrar una métrica con título, valor, icono y color.
-Props: title, value, icon, color, trend (opcional).
+Props: title, value, Icon (Component), color, trend (opcional), subtitle.
 Estado interno: Ninguno.
 
-**IncomeCard:**
-Responsabilidad: Mostrar ingresos totales en soles. Extiende MetricCard.
-Props: value (número).
+**ProductivityChart:**
+Responsabilidad: Renderizar gráfico de barras mostrando horas trabajadas por día.
+Props: data (array de objetos con fecha y horas).
 Estado interno: Ninguno.
-Servicios consumidos: metricasService.getIngresos().
-
-**CostsCard:**
-Responsabilidad: Mostrar costos totales. Extiende MetricCard.
-Props: value (número).
-Estado interno: Ninguno.
-Servicios consumidos: metricasService.getCostos().
-
-**ClientsCard:**
-Responsabilidad: Mostrar cantidad de clientes nuevos y recurrentes.
-Props: nuevos (número), recurrentes (número).
-Estado interno: Ninguno.
-Servicios consumidos: metricasService.getClientes().
-
-**ProfitCard:**
-Responsabilidad: Mostrar utilidad neta en soles y porcentaje.
-Props: value (número), percentage (número).
-Estado interno: Ninguno.
-Servicios consumidos: metricasService.getUtilidad().
-
-**FlowChart:**
-Responsabilidad: Renderizar gráfico de líneas o barras mostrando flujo de ingresos vs egresos.
-Props: data (array de objetos con ingresos y egresos por período).
-Estado interno: Ninguno.
-Librerías: Chart.js o Recharts.
-Servicios consumidos: metricasService.getFlujo().
+Librerías: Recharts.
+Servicios consumidos: metricasService.getGraficoProductividad().
 
 #### 4.5.4 Componentes de Jornadas
 
@@ -705,11 +667,9 @@ jornadasService.js:
 - getHistorial(userId): Obtiene listado de jornadas
 
 metricasService.js:
-- getIngresos(userId): Calcula ingresos totales
-- getCostos(userId): Calcula costos totales
-- getClientes(userId): Obtiene conteo de clientes
-- getUtilidad(userId): Calcula utilidad neta
-- getFlujo(userId, periodo): Obtiene flujo de ingresos/egresos
+- getStatsTiempo(userId): Obtiene métricas del mes (total, promedio, récord)
+- getGraficoProductividad(userId): Obtiene serie de horas diarias
+- getProgresoSemanal(userId): Calcula avance vs meta de 40h
 
 ### 4.9 Seguridad en la Arquitectura
 
@@ -722,7 +682,7 @@ Política para tabla jornadas:
 - UPDATE: user_id = auth.uid() AND id = jornada.id
 - DELETE: false (no permitido)
 
-Política para tabla metricas_financieras:
+Política para tabla estadisticas_productividad:
 - SELECT: user_id = auth.uid()
 - INSERT: user_id = auth.uid()
 - UPDATE: user_id = auth.uid()
@@ -775,16 +735,14 @@ Toda la comunicación entre frontend y Supabase se realiza sobre HTTPS, protegie
                                   │
                                   │
 ┌─────────────────────┐           │
-│ METRICAS_FINANCIERAS│           │
+│ESTADISTICAS_PRODUCTIVIDAD│      │
 ├─────────────────────┤           │
 │ id (UUID, PK)       │           │
 │ user_id (UUID, FK)  │───────────┘
-│ ingresos_totales    │
-│ costos_totales      │
-│ clientes_nuevos     │
-│ clientes_recurrentes│
-│ utilidad_neta       │
-│ porcentaje_utilidad │
+│ total_horas_mes     │
+│ promedio_diario     │
+│ dias_trabajados     │
+│ jornada_max         │
 │ periodo (Date)      │
 │ created_at          │
 │ updated_at          │
@@ -870,25 +828,23 @@ USING (false);
 - hora_fin debe ser posterior a hora_inicio.
 - horas_trabajadas se calcula automáticamente: (hora_fin - hora_inicio) - tiempo_pausas.
 
-#### 5.2.3 Tabla: metricas_financieras
+#### 5.2.3 Tabla: estadisticas_productividad
 
-**Descripción:** Almacena métricas financieras calculadas para cada usuario por período.
+**Descripción:** Almacena estadísticas de productividad calculadas automáticamente para cada usuario por mes.
 
 **Campos:**
 
-| Campo                 | Tipo      | Restricciones           | Descripción                           |
-|-----------------------|-----------|-------------------------|---------------------------------------|
-| id                    | UUID      | PK, NOT NULL            | Identificador único del registro      |
-| user_id               | UUID      | FK, NOT NULL            | Referencia al usuario propietario     |
-| ingresos_totales      | Decimal   | NOT NULL, DEFAULT 0     | Suma total de ingresos                |
-| costos_totales        | Decimal   | NOT NULL, DEFAULT 0     | Suma total de costos                  |
-| clientes_nuevos       | Integer   | NOT NULL, DEFAULT 0     | Cantidad de clientes nuevos           |
-| clientes_recurrentes  | Integer   | NOT NULL, DEFAULT 0     | Cantidad de clientes recurrentes      |
-| utilidad_neta         | Decimal   | NULL                    | Calculado: ingresos - costos          |
-| porcentaje_utilidad   | Decimal   | NULL                    | Calculado: (utilidad / ingresos) * 100|
-| periodo               | Date      | NOT NULL                | Período de la métrica (día/semana/mes)|
-| created_at            | Timestamp | NOT NULL, DEFAULT NOW() | Fecha de creación del registro        |
-| updated_at            | Timestamp | NOT NULL, DEFAULT NOW() | Fecha de última actualización         |
+| Campo            | Tipo      | Restricciones           | Descripción                           |
+|------------------|-----------|-------------------------|---------------------------------------|
+| id               | UUID      | PK, NOT NULL            | Identificador único del registro      |
+| user_id          | UUID      | FK, NOT NULL            | Referencia al usuario propietario     |
+| total_horas_mes  | Decimal   | NOT NULL, DEFAULT 0     | Suma total de horas trabajadas        |
+| promedio_diario  | Decimal   | NOT NULL, DEFAULT 0     | Promedio de horas por día trabajado   |
+| dias_trabajados  | Integer   | NOT NULL, DEFAULT 0     | Conteo de días con actividad          |
+| jornada_max      | Decimal   | NOT NULL, DEFAULT 0     | Récord de horas en un solo día        |
+| periodo          | Date      | NOT NULL                | Primer día del mes (identificador)    |
+| created_at       | Timestamp | NOT NULL, DEFAULT NOW() | Fecha de creación del registro        |
+| updated_at       | Timestamp | NOT NULL, DEFAULT NOW() | Fecha de última actualización         |
 
 **Relaciones:**
 - user_id REFERENCES users(id) ON DELETE CASCADE
@@ -929,28 +885,46 @@ USING (false);
 
 ### 5.3 Triggers y Funciones de Base de Datos
 
-#### Trigger para Calcular Utilidad Neta
+#### Trigger para Sincronizar Estadísticas de Productividad
 
 ```sql
-CREATE OR REPLACE FUNCTION calculate_utilidad()
+CREATE OR REPLACE FUNCTION public.sync_user_stats()
 RETURNS TRIGGER AS $$
+DECLARE
+    target_user_id uuid;
+    start_of_month DATE;
 BEGIN
-  NEW.utilidad_neta = NEW.ingresos_totales - NEW.costos_totales;
-  
-  IF NEW.ingresos_totales > 0 THEN
-    NEW.porcentaje_utilidad = (NEW.utilidad_neta / NEW.ingresos_totales) * 100;
-  ELSE
-    NEW.porcentaje_utilidad = 0;
-  END IF;
-  
-  RETURN NEW;
+    target_user_id := COALESCE(NEW.user_id, OLD.user_id);
+    start_of_month := DATE_TRUNC('month', CURRENT_DATE);
+
+    INSERT INTO public.estadisticas_productividad (user_id, periodo, total_horas_mes, promedio_diario, dias_trabajados, jornada_max)
+    SELECT 
+        user_id,
+        DATE_TRUNC('month', fecha)::date as periodo,
+        COALESCE(SUM(horas_trabajadas), 0) as total_horas_mes,
+        CASE WHEN COUNT(DISTINCT fecha) > 0 THEN COALESCE(SUM(horas_trabajadas), 0) / COUNT(DISTINCT fecha) ELSE 0 END as promedio_diario,
+        COUNT(DISTINCT fecha) as dias_trabajados,
+        COALESCE(MAX(horas_trabajadas), 0) as jornada_max
+    FROM public.jornadas
+    WHERE user_id = target_user_id
+      AND DATE_TRUNC('month', fecha) = start_of_month
+      AND estado = 'finalizada'
+    GROUP BY user_id, DATE_TRUNC('month', fecha)
+    ON CONFLICT (user_id, periodo) 
+    DO UPDATE SET
+        total_horas_mes = EXCLUDED.total_horas_mes,
+        promedio_diario = EXCLUDED.promedio_diario,
+        dias_trabajados = EXCLUDED.dias_trabajados,
+        jornada_max = EXCLUDED.jornada_max,
+        updated_at = NOW();
+
+    RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_calculate_utilidad
-BEFORE INSERT OR UPDATE ON metricas_financieras
-FOR EACH ROW
-EXECUTE FUNCTION calculate_utilidad();
+CREATE TRIGGER trg_sync_stats
+AFTER INSERT OR UPDATE OR DELETE ON public.jornadas
+FOR EACH ROW EXECUTE FUNCTION public.sync_user_stats();
 ```
 
 #### Trigger para Validar Jornada Única Activa

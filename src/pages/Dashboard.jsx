@@ -1,33 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import {
-    DollarSign,
-    Package,
-    Users,
-    TrendingUp as TrendUpIcon,
     Clock,
-    Zap
+    Calendar,
+    Zap,
+    TrendingUp,
+    History,
+    BarChart2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import MetricCard from '../components/dashboard/MetricCard.jsx';
-import FlowChart from '../components/dashboard/FlowChart.jsx';
+import ProductivityChart from '../components/dashboard/ProductivityChart.jsx';
 import Loading from '../components/common/Loading.jsx';
 import Alert from '../components/common/Alert.jsx';
 import * as metricasService from '../services/metricasService.js';
-import { formatCurrency } from '../utils/dateFormatters.js';
 import './Dashboard.css';
 
 /**
- * Dashboard page — financial metrics overview with cards and chart.
+ * Dashboard page — time control and productivity overview.
  */
 export default function Dashboard() {
     const { user } = useAuth();
-    const [metrics, setMetrics] = useState({
-        ingresos: 0,
-        costos: 0,
-        clientes: { nuevos: 0, recurrentes: 0 },
-        utilidad: { utilidad: 0, porcentaje: 0 },
-        horas: 0,
-        flujo: [],
+    const [stats, setStats] = useState({
+        totalHorasMes: 0,
+        promedioDiario: 0,
+        diasTrabajados: 0,
+        jornadaMax: 0,
+        progreso: { current: 0, target: 40, percentage: 0 },
+        grafico: [],
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -37,25 +36,18 @@ export default function Dashboard() {
 
         setLoading(true);
         Promise.all([
-            metricasService.getIngresos(user.id),
-            metricasService.getCostos(user.id),
-            metricasService.getClientes(user.id),
-            metricasService.getUtilidad(user.id),
-            metricasService.getHorasMes(user.id),
-            metricasService.getFlujo(user.id),
+            metricasService.getStatsTiempo(user.id),
+            metricasService.getProgresoSemanal(user.id),
+            metricasService.getGraficoProductividad(user.id),
         ])
-            .then(([ingresosRes, costosRes, clientesRes, utilidadRes, horasRes, flujoRes]) => {
-                const firstError = [ingresosRes, costosRes, clientesRes, utilidadRes, horasRes, flujoRes]
-                    .find((r) => r.error);
+            .then(([statsRes, progresoRes, graficoRes]) => {
+                const firstError = [statsRes, progresoRes, graficoRes].find((r) => r.error);
                 if (firstError?.error) setError(firstError.error);
 
-                setMetrics({
-                    ingresos: ingresosRes.data,
-                    costos: costosRes.data,
-                    clientes: clientesRes.data,
-                    utilidad: utilidadRes.data,
-                    horas: horasRes.data,
-                    flujo: flujoRes.data,
+                setStats({
+                    ...statsRes.data,
+                    progreso: progresoRes.data,
+                    grafico: graficoRes.data,
                 });
                 setLoading(false);
             })
@@ -73,63 +65,62 @@ export default function Dashboard() {
         );
     }
 
-    const utilidadIsPositive = metrics.utilidad.utilidad >= 0;
-
     return (
         <div className="dashboard">
             <div className="dashboard__header">
                 <h1>Dashboard</h1>
-                <p>Resumen de métricas financieras</p>
+                <p>Resumen de control horario y productividad</p>
             </div>
 
             {error && <Alert message={error} type="warning" onClose={() => setError(null)} />}
 
             <div className="dashboard__grid">
                 <MetricCard
-                    title="Ingresos Totales"
-                    value={formatCurrency(metrics.ingresos)}
-                    color="success"
-                    trendDirection="up"
-                    Icon={DollarSign}
-                />
-                <MetricCard
-                    title="Costos Totales"
-                    value={formatCurrency(metrics.costos)}
-                    color="danger"
-                    trendDirection="down"
-                    Icon={Package}
-                />
-                <MetricCard
-                    title="Clientes"
-                    value={`${metrics.clientes.nuevos + metrics.clientes.recurrentes}`}
-                    subtitle={`${metrics.clientes.nuevos} nuevos · ${metrics.clientes.recurrentes} recurrentes`}
-                    color="info"
-                    Icon={Users}
-                />
-                <MetricCard
-                    title="Utilidad Neta"
-                    value={formatCurrency(metrics.utilidad.utilidad)}
-                    trend={`${metrics.utilidad.porcentaje.toFixed(1)}%`}
-                    trendDirection={utilidadIsPositive ? 'up' : 'down'}
-                    color={utilidadIsPositive ? 'success' : 'danger'}
-                    Icon={TrendUpIcon}
-                />
-                <MetricCard
                     title="Horas del Mes"
-                    value={`${metrics.horas.toFixed(1)}h`}
-                    color="secondary"
+                    value={`${stats.totalHorasMes.toFixed(1)}h`}
+                    color="primary"
                     Icon={Clock}
                 />
                 <MetricCard
-                    title="Rentabilidad"
-                    value={metrics.horas > 0 ? formatCurrency(metrics.utilidad.utilidad / metrics.horas) : 'S/ 0.00'}
-                    subtitle="Utilidad por hora"
+                    title="Promedio Diario"
+                    value={`${stats.promedioDiario.toFixed(1)}h`}
+                    subtitle="Horas por día trabajado"
+                    color="secondary"
+                    Icon={TrendingUp}
+                />
+                <MetricCard
+                    title="Días Trabajados"
+                    value={`${stats.diasTrabajados}`}
+                    subtitle="En el mes actual"
+                    color="info"
+                    Icon={Calendar}
+                />
+                <MetricCard
+                    title="Jornada Máxima"
+                    value={`${stats.jornadaMax.toFixed(1)}h`}
+                    subtitle="Récord personal"
                     color="accent"
                     Icon={Zap}
                 />
+                <MetricCard
+                    title="Carga Semanal"
+                    value={`${stats.progreso.current.toFixed(1)}h`}
+                    trend={`${stats.progreso.percentage.toFixed(0)}%`}
+                    trendDirection={stats.progreso.percentage >= 80 ? 'up' : 'neutral'}
+                    subtitle={`Meta: ${stats.progreso.target}h`}
+                    color="success"
+                    Icon={BarChart2}
+                />
+                <MetricCard
+                    title="Eficiencia"
+                    value={stats.diasTrabajados > 0 ? `${((stats.totalHorasMes / (stats.diasTrabajados * 8)) * 100).toFixed(0)}%` : '0%'}
+                    subtitle="Vs jornada de 8h"
+                    color="warning"
+                    Icon={History}
+                />
             </div>
 
-            <FlowChart data={metrics.flujo} />
+            <ProductivityChart data={stats.grafico} />
         </div>
     );
 }
